@@ -1,0 +1,189 @@
+/*
+Let's split all the queries on the blocks of size that approximately equals to sqrt(N)
+Then, let's sort every block non-increasingly.
+Before you start processing a block, you need to "connect" all the edges that you had before the block. 
+I use DSU for this purpose.
+One can notice, that there is no more that sqrt(N) updates in each block.
+Then, you can update every edge a certain query needs no more than for O(N * sqrt(N)).
+After you have updated such edges, let's extend component of query's node by DFS.
+Then, answer for a certain query is size of the component in which the query's node lies.
+So, such a solution approximately works O(N * sqrt(N) * reverse_akermann(N)).
+*/
+#include <bits/stdc++.h>
+using namespace std;
+ 
+#pragma GCC optimize("Ofast,unroll-loops")
+#pragma GCC target("avx,avx2,fma")
+ 
+#define max3(a, b, c) max(a, max(b, c))
+#define min3(a, b, c) min(a, min(b, c))
+#define mp make_pair
+#define e first
+#define w second
+#define pb push_back
+#define ppb pop_back
+#define ll long long
+#define ull unsigned long long
+#define cntbit(x) __builtin_popcount(x)
+#define uset unordered_set
+#define umap unordered_map
+#define pii pair<int, int>
+#define ld long double
+#define pll pair<long long, long long>
+ 
+struct edge {
+	int u, v, w;
+	bool operator < (const edge &b) const {
+		return w > b.w;
+	}
+};
+ 
+struct query {
+	int v, w, updatesTillNow, ind;
+	bool operator < (const query &b) const {
+		return w > b.w;
+	}
+};
+ 
+const int block = 500;
+const int N = 1e5 + 1;
+int n, m, q, ans[N], p[N], sz[N], szedges;
+vector <int> g[N];
+edge edges[N];
+vector <int> was;
+edge last[N], back[N];
+query qq[N];
+pii upd[N];
+int szupd, szqq;
+edge e[N];
+bool used[N], usedupd[N], start[N];
+ 
+int find(int v) {
+	if(v == p[v])
+		return v;
+	return p[v] = find(p[v]);
+}
+ 
+inline void unio(int a, int b) {
+	a = find(a);
+	b = find(b);
+	if(a != b) {
+		if(sz[a] < sz[b])
+			swap(a, b);
+		p[b] = a;
+		sz[a] += sz[b];
+	}
+}
+ 
+ 
+void dfs(int v, int ind, int w) {
+	used[v] = true;
+	was.pb(v);
+	ans[ind] += sz[v];
+	for(int to : g[v])
+		if(!used[to])
+			dfs(to, ind, w);
+}
+ 
+inline void getrid() {
+	szedges = 0;
+	for(int i = 0; i < szupd; ++i)
+		used[upd[i].e] = true;
+	for(int i = 1; i <= m; ++i)
+		if(!used[i])
+			edges[szedges++] = e[i];
+	for(int i = 0; i < szupd; ++i)
+		used[upd[i].e] = false;
+}
+ 
+ 
+inline void solve() {
+	sort(qq, qq + szqq);
+	getrid();
+	sort(edges, edges + szedges);
+	int index = 0;
+	for(int i = 1; i <= n; ++i)
+		p[i] = i, sz[i] = 1;
+	for(int k = 0; k < szqq; ++k) {
+		query cur = qq[k];
+		while(index < szedges && edges[index].w >= cur.w) {
+			unio(edges[index].v, edges[index].u);
+			++index;
+		}
+		for(int i = cur.updatesTillNow - 1; i >= 0; --i) {
+			if(!usedupd[upd[i].e]) {
+				edge x = e[upd[i].e];
+				x.w = upd[i].w;
+				int a = find(x.u), b = find(x.v);
+				if(x.w >= cur.w && b != a) {
+					g[b].pb(a);
+					g[a].pb(b);
+				}
+			}
+			usedupd[upd[i].e] = true;
+		}
+		for(int i = cur.updatesTillNow; i < szupd; ++i) {
+			if(!usedupd[upd[i].e]) {
+				edge x = back[i];
+				int a = find(x.u), b = find(x.v);
+				if(x.w >= cur.w && b != a) {
+					g[b].pb(a);
+					g[a].pb(b);
+				}
+			}
+			usedupd[upd[i].e] = true;
+		}
+ 
+		dfs(find(cur.v), cur.ind, cur.w);
+ 
+		for(int i = 0; i < szupd; ++i) {
+			usedupd[upd[i].e] = false;
+			g[find(e[upd[i].e].u)].clear();
+			g[find(e[upd[i].e].v)].clear();
+		}
+ 
+		while(!was.empty()) {
+			used[was.back()] = false;
+			was.ppb();
+		}
+	}
+	for(int i = 0; i < szupd; ++i)
+		e[upd[i].e].w = upd[i].w;
+	szqq = szupd = 0; 
+}
+ 
+ 
+int main() {
+	scanf("%d%d", &n, &m);
+	for(int i = 1; i <= m; ++i) {
+		scanf("%d%d%d", &e[i].u, &e[i].v, &e[i].w);
+		last[i] = e[i];
+	}
+	scanf("%d", &q);
+	for(int i = block - 1; i <= q; i += block)
+		start[i] = true;
+	for(int i = 1; i <= q; ++i) {
+		int c;
+		scanf("%d", &c);
+		if(c == 1) {
+			scanf("%d%d", &upd[szupd].e, &upd[szupd].w);
+			back[szupd] = last[upd[szupd].e];
+			last[upd[szupd].e] = e[upd[szupd].e];
+			last[upd[szupd].e].w = upd[szupd].w;
+			++szupd;
+		}
+		else {
+			scanf("%d%d", &qq[szqq].v, &qq[szqq].w);
+			qq[szqq].updatesTillNow = szupd;
+			qq[szqq].ind = i;
+			++szqq;
+		}
+		if(start[i])
+			solve();
+	}
+	solve();
+	for(int i = 1; i <= q; ++i)
+		if(ans[i])
+			printf("%d\n", ans[i]);
+	return 0;
+}

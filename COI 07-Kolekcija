@@ -1,3 +1,7 @@
+/*
+solved as in https://github.com/zoooma13/Competitive-Programming/blob/master/kolekcIja.cpp
+*/
+
 #include <bits/stdc++.h>
 using namespace std;
 

@@ -1,0 +1,54 @@
+/*
+Let's suppose there is some period (and call it T), when (t + (t/b)) mod A = (x + T + (t + T) / b) mod A.
+Similar to the second equation.
+So, if one solves the system, the T will be equal to the values from the code in different cases.
+Now we have to reconstruct all the remainder-segments (as [(l mod T); (r mod T)] or some other cases that need to be considered) the way we can use.
+To get rid of situations when we have counted some point twice or more times, we need to make all the received segments to non-intersecting ones.
+Then just add number of points in each segment, and there is the answer we need.
+*/
+#include <bits/stdc++.h>
+using namespace std;
+ 
+const int N = 1e6 + 15;
+int n;
+long long t, a, b, l, r, ans;
+vector <pair <long long, int> > temp;
+stack <long long> st;
+ 
+int main() {
+	scanf("%d%lld%lld", &n, &a, &b);
+	if((b + 1) % a == 0)
+		t = b;
+	else {
+		t = a / __gcd(a, b + 1);
+		t *= b;
+	}
+	while(n--) {
+		scanf("%lld%lld", &l, &r);
+		if(r - l + 1 >= t)
+			return cout << t, 0;
+		l %= t, r %= t;
+		if(l > r) {
+			temp.push_back({l, -1});
+			temp.push_back({t, 1});
+			temp.push_back({0, -1});
+			temp.push_back({r + 1, 1});
+		}
+		else {
+			temp.push_back({l, -1});
+			temp.push_back({r + 1, 1});
+		}
+	}
+	sort(temp.begin(), temp.end());
+	for(auto i : temp) {
+		if(i.second == 1) {
+			if(st.size() == 1)
+				ans += i.first - st.top();
+			st.pop();
+		}
+		else
+			st.push(i.first);
+	}
+	printf("%lld", ans);
+	return 0;
+}

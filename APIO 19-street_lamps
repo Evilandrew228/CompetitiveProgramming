@@ -1,3 +1,10 @@
+/*
+Let's call a position valuable at some moment in the next situation. 
+If changed to 1, the position influence some [l;r] consisting only of ones after the change, or if changed to 0, the positions influence some [l;r], that have consisted only of 1 till the moment. 
+I found the borders (as minimum l and maximum r) with binary search and BIT. 
+Then, with treap inside of segment tree, I update every such border with l <= l' <= position and position <= r' <= r. 
+I make +index when a bulb becomes 0 and -index when a bulb becomes 1.
+*/
 #include <bits/stdc++.h>
 using namespace std;
  

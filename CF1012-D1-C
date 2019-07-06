@@ -1,0 +1,65 @@
+/*
+Hadn't read the editorial to it before I solved. When I took a look, I suggested that mine is a bit different.
+Let's solve this via dynamic programming approach with dp[i][k][mask] meant dp[prefix_processed][good_hills_on_the_prefix][1 if we_take_i-th_element, 0 otherwise]
+It's quite easy to solve the problem with O(n ^ 3).
+The most important observation to optimize to O(n ^ 2) is that current states depend on [i-2, i-1, i]-elements.
+To better understand transition between states you can look at the code.
+*/
+#include <bits/stdc++.h>
+using namespace std;
+#define max3(a, b, c) max(a, max(b, c))
+#define min3(a, b, c) min(a, min(b, c))
+#define mp make_pair
+#define f first
+#define se second
+#define pb push_back
+#define ppb pop_back
+#define ll long long
+#define ull unsigned long long
+#define cntbit(x) __builtin_popcount(x)
+#define uset unordered_set
+#define umap unordered_map
+#define pii pair<int, int>
+#define ld long double
+#define pll pair<long long, long long>
+ 
+const int inf = 2e9;
+const int N = 5e3 + 15;
+int n, a[N], dp[N][N][2];
+ 
+int main() {
+	for(int i = 0; i < N; ++i)
+		for(int j = 0; j < N; ++j)
+			for(int k = 0; k < 2; ++k)
+				dp[i][j][k] = inf;
+	scanf("%d", &n);
+	for(int i = 1; i <= n; ++i)
+		scanf("%d", &a[i]);
+	for(int i = 0; i < N; ++i)
+		dp[i][0][0] = 0;
+	dp[1][1][1] = (a[1] > a[2] ? 0 : a[2] - a[1] + 1);
+	for(int i = 2; i <= n; ++i) {
+		for(int k = 1; k <= (n + 1) / 2; ++k)
+			dp[i][k][0] = min3(dp[i][k][0], dp[i-1][k][1], dp[i-1][k][0]);
+		for(int k = 1; k <= (n + 1) / 2; ++k) {
+			int now = 0;
+			if(a[i] <= a[i-1])
+				now += a[i-1] - a[i] + 1;
+			if(a[i] <= a[i+1])
+				now += a[i+1] - a[i] + 1;
+			dp[i][k][1] = dp[i-2][k-1][0] + now;
+ 
+			if(a[i] <= a[i-1])
+				now -= a[i-1] - a[i] + 1;
+ 
+			int x = min(a[i-2] - 1, a[i-1]);
+			if(a[i] <= x)
+				now += x - a[i] + 1;
+ 
+			dp[i][k][1] = min(dp[i][k][1], dp[i-2][k-1][1] + now);
+		}
+	}
+	for(int i = 1; i <= (n + 1) / 2; ++i)
+		cout << min(dp[n][i][0], dp[n][i][1]) << ' ';
+    return 0;
+}

@@ -1,5 +1,5 @@
 /*
-Hadn't read the editorial to it before I solved. When I took a look, I suggested that mine is a bit different.
+before solved, I hadn't read the editorial. When I took a look, I suggested that mine is a bit different.
 Let's solve this via dynamic programming approach with dp[i][k][mask] meant dp[prefix_processed][good_hills_on_the_prefix][1 if we_take_i-th_element, 0 otherwise]
 It's quite easy to solve the problem with O(n ^ 3).
 The most important observation to optimize to O(n ^ 2) is that current states depend on [i-2, i-1, i]-elements.

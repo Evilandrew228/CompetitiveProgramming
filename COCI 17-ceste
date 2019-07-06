@@ -1,0 +1,99 @@
+/*
+https://codeforces.com/blog/entry/56372?#comment-401390
+*/
+#include <bits/stdc++.h>
+using namespace std;
+
+#define max3(a, b, c) max(a, max(b, c))
+#define min3(a, b, c) min(a, min(b, c))
+#define mp make_pair
+#define f first
+#define se second
+#define pb push_back
+#define ppb pop_back
+#define ll long long
+#define ull unsigned long long
+#define cntbit(x) __builtin_popcount(x)
+#define uset unordered_set
+#define umap unordered_map
+#define pii pair<int, int>
+#define ld long double
+#define pll pair<long long, long long>
+ 
+#define int long long
+ 
+struct edge {
+	int to, t, c;
+	edge(int to, int t, int cost) : to(to), t(t), c(cost) {}
+};
+ 
+const int inf = 2e15;
+const int N = 2e3 + 15;
+int n, m, ans[N];
+double d[N];
+int sumt[N], sumc[N];
+vector <edge> g[N];
+bool used[N];
+set <pair <double, int> > q;
+vector <pair <pii, pii> > edges;
+ 
+void dxtra(double x) {
+	fill(d, d + N, inf);
+	memset(sumt, 0, sizeof(sumt));
+	memset(sumc, 0, sizeof(sumc));
+	d[1] = 0;
+	q.insert(mp(0, 1));
+	while(!q.empty()) {
+		int v = q.begin()->se;
+		q.erase(q.begin());
+		for(auto u : g[v]) {
+			if(d[v] + u.t * x + u.c * (1 - x) < d[u.to]) {
+				q.erase(mp(d[u.to], u.to));
+				sumt[u.to] = sumt[v] + u.t;
+				sumc[u.to] = sumc[v] + u.c;
+				d[u.to] = d[v] + u.t * x + u.c * (1 - x);
+				q.insert(mp(d[u.to], u.to));
+			}
+		}
+	}
+	for(int i = 2; i <= n; ++i)
+		if(d[i] != inf)
+			ans[i] = min(ans[i], sumt[i] * sumc[i]);
+}
+ 
+#undef int
+ 
+int main() {
+	#define int long long
+	fill(ans, ans + N, inf);
+	ios_base::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+	cin >> n >> m;
+	for(int i = 1; i <= m; ++i) {
+		int u, v, t, c;
+		cin >> u >> v >> t >> c;
+		g[u].pb(*new edge(v, t, c));
+		g[v].pb(*new edge(u, t, c));
+		edges.pb({{u, v}, {t, c}});
+		edges.pb({{v, u}, {t, c}});
+	}
+	double x = 0;
+    while(1) {
+        double new_x = 1;
+        dxtra(x);
+        for(int i = 0; i < edges.size(); ++i) {
+            int v = edges[i].f.f, to = edges[i].f.se, t = edges[i].se.f, c = edges[i].se.se;
+            if(d[v] != inf) {
+	            int na = sumt[v] + t, nb = sumc[v] + c, ca = sumt[to], cb = sumc[to];
+	            double xx = (cb - nb) / (double)(na + cb - nb - ca);
+	            if(x < xx && xx <= new_x)
+	                new_x = xx;
+	        }
+        }
+        if(x == new_x)
+            break;
+        x = new_x;
+    }
+	for(int i = 2; i <= n; ++i)
+		cout << (ans[i] == inf ? -1 : ans[i]) << endl;
+    return 0;
+}

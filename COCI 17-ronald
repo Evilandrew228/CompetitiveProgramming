@@ -1,0 +1,67 @@
+// https://github.com/mostafa-saad/MyCompetitiveProgramming/blob/master/Olympiad/COCI/official/2017/contest5_solutions/solutions.pdf
+
+#include <bits/stdc++.h>
+using namespace std;
+ 
+const int N = 1e3 + 15;
+int n, m, p[N], sz[N];
+bool g[N][N], used[N], was[N];
+ 
+int find(int v) {
+	if(v == p[v])
+		return v;
+	return p[v] = find(p[v]);
+}
+ 
+void unio(int a, int b) {
+	a = find(a);
+	b = find(b);
+	if(a != b) {
+		if(sz[a] < sz[b])
+			swap(a, b);
+		p[b] = a;
+		sz[a] += sz[b];
+	}
+}
+ 
+bool dfs(int v, bool rev) {
+	used[v] = true;
+	if(rev)
+		for(int i = 1; i <= n; ++i) {
+			g[i][v] ^= 1;
+			g[v][i] ^= 1;
+		}
+	for(int i = 1; i <= n; ++i)
+		if(i != v && !g[i][v])
+			if(used[i] || !dfs(i, 1))
+				return false;
+	return true;
+}
+ 
+int main() {
+	scanf("%d%d", &n, &m);
+	for(int i = 1; i <= n; ++i)
+		p[i] = i, sz[i] = 1;
+	for(int i = 1; i <= m; ++i) {
+		int u, v;
+		scanf("%d%d", &u, &v);
+		unio(u, v);
+		g[u][v] = g[v][u] = true;
+	}
+	for(int i = 1; i <= n; ++i) {
+		if(!was[find(i)]) {
+			memset(used, 0, sizeof(used));
+			bool flag1 = dfs(i, 0);
+ 
+			memset(used, 0, sizeof(used));
+			bool flag2 = dfs(i, 1);
+			if(!flag1 && !flag2) {
+				puts("NE");
+				return 0;
+			}
+			was[find(i)] = true;
+		}
+	}
+	puts("DA");
+    return 0;
+}

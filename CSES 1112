@@ -1,0 +1,50 @@
+// https://github.com/nya-nya-meow/CompetitiveProgramming/blob/master/CSES/CSES%201112%20-%20Substrings.cpp
+
+#include <bits/stdc++.h>
+using namespace std;
+
+const int mod = 1e9 + 7;
+const int N = 1e3 + 15;
+int n, m, p[N], nxt[N][26];
+long long dp[N][N][2];
+string s;
+ 
+long long solve(int i, int j, int contain) {
+	if(j == m)
+		contain = 1;
+	if(i == n)
+		return contain;
+	if(dp[i][j][contain] != -1)
+		return dp[i][j][contain];
+
+	dp[i][j][contain] = 0;
+	for(int c = 0; c < 26; ++c)
+		dp[i][j][contain] = (dp[i][j][contain] + solve(i + 1, nxt[j][c], contain)) % mod;
+	return dp[i][j][contain];
+}
+ 
+int main() {
+	cin >> n >> s;
+	m = s.size();
+	for(int i = 1; i <= m; ++i) {
+		for(int c = 0; c < 26; ++c) {
+			int j = p[i-1];
+			while(j > 0 && c != s[j] - 'A')
+				j = p[j-1];
+			nxt[i][c] = j + (c == s[j] - 'A');
+		}
+		if(i != m) {
+			p[i] = nxt[i][s[i] - 'A'];
+			nxt[i][s[i] - 'A'] = i + 1;
+		}
+	}
+	nxt[0][s[0] - 'A'] = 1;
+	for(int i = 0; i < N; ++i)
+		for(int j = 0; j < N; ++j)
+			for(int k = 0; k < 2; ++k)
+				dp[i][j][k] = -1;
+ 
+	cout << solve(0, 0, 0);
+ 
+    return 0;
+}

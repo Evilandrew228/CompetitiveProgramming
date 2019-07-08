@@ -1,0 +1,27 @@
+// https://github.com/mostafa-saad/MyCompetitiveProgramming/blob/master/Olympiad/COCI/COCI-17-kas.txt
+
+#include <bits/stdc++.h>
+using namespace std;
+ 
+const int inf = 2e9;
+const int M = 1e5 + 15;
+int n, x, summ, ans = inf;
+int dp[2][M];
+ 
+int main() {
+	scanf("%d", &n);
+	for(int i = 1; i <= n; ++i) {
+		scanf("%d", &x);
+		summ += x;
+		int bit = (i & 1), prev = (i & 1) ^ 1;
+		for(int j = M - 1; j >= 0; --j) {
+			if(!j || dp[prev][j]) {
+				dp[bit][j + x] = max(dp[bit][j + x], dp[prev][j] + x);
+				dp[bit][abs(j - x)] = max(dp[bit][abs(j - x)], dp[prev][j] + x);
+				dp[bit][j] = max(dp[bit][j], dp[prev][j]);
+			}
+		}
+	}
+	printf("%d\n", summ - dp[n & 1][0] / 2);
+    return 0;
+}

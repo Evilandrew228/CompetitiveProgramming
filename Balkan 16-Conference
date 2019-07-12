@@ -1,0 +1,90 @@
+/*
+    Firstly, we maintain whether we can get to journalist from a certain position, going from the end.
+    Then we do the same, but going from the beginning and maintaining whether we can get to scientist. But we make used[scientist] = true after we reacher ans[scientist]
+    Let's consider graph G and dialogue between two people as edge of it. Then we have only to maintain the shortest journalist of a certain vertex.
+*/
+#include <bits/stdc++.h>
+using namespace std;
+ 
+#define max3(a, b, c) max(a, max(b, c))
+#define min3(a, b, c) min(a, min(b, c))
+#define mp make_pair
+#define f first
+#define se second
+#define pb push_back
+#define ppb pop_back
+#define ll long long
+#define ull unsigned long long
+#define cntbit(x) __builtin_popcount(x)
+#define uset unordered_set
+#define umap unordered_map
+#define pii pair<int, int>
+#define ld long double
+#define pll pair<long long, long long>
+
+const int inf = 2e9;
+const int N = 1e6 + 15;
+int n, m, k, ans[N], cur[N];
+pii last[N], e[N];
+set <int> heard;
+bool used[N];
+
+int main() {
+	scanf("%d%d%d", &n, &m, &k);
+    for(int i = 1; i <= m; ++i)
+    	scanf("%d%d", &e[i].f, &e[i].se);
+    for(int i = m; i; --i) {
+    	used[e[i].f] |= (e[i].f > k);
+    	used[e[i].se] |= (e[i].se > k);
+    	used[e[i].f] |= used[e[i].se];
+    	used[e[i].se] |= used[e[i].f];
+
+    	if(!ans[e[i].f] && used[e[i].f])
+    		ans[e[i].f] = i;
+    	if(!ans[e[i].se] && used[e[i].se])
+    		ans[e[i].se] = i;
+    }
+    memset(used, 0, sizeof(used));
+    for(int i = 1; i <= m; ++i) {
+    	used[e[i].f] |= (e[i].f <= k && i == ans[e[i].f]);
+    	used[e[i].se] |= (e[i].se <= k && i == ans[e[i].se]);
+
+    	used[e[i].f] |= used[e[i].se];
+    	used[e[i].se] |= used[e[i].f];
+    }
+    fill(last, last + N, mp(inf, inf));
+    for(int i = m; i; --i) {
+    	if(e[i].f > k)
+    		last[e[i].f] = {i, e[i].f};
+
+    	if(e[i].se > k)
+    		last[e[i].se] = {i, e[i].se};
+
+    	if(last[e[i].f].f < last[e[i].se].f)
+    		last[e[i].se] = last[e[i].f];
+
+    	else if(last[e[i].f].f > last[e[i].se].f)
+    		last[e[i].f] = last[e[i].se];
+
+    	if(ans[e[i].f] == i)
+    		cur[e[i].f] = last[e[i].f].se;
+
+    	if(ans[e[i].se] == i)
+    		cur[e[i].se] = last[e[i].se].se;
+    }
+
+    for(int i = k + 1; i <= n; ++i)
+    	if(used[i])
+    		heard.insert(i);
+
+    for(int i = 1; i <= k; ++i)
+    	printf("%d ", (ans[i] ? ans[i] : -1));
+    puts("");
+    printf("%d ", (int)heard.size());
+    for(int x : heard)
+    	printf("%d ", x);
+    puts("");
+    for(int i = 1; i <= k; ++i)
+    	printf("%d ", (cur[i] != 0 && cur[i] != inf ? cur[i] : -1));
+    return 0;
+} 

@@ -1,0 +1,94 @@
+/*
+	It is important that we can rearrange all the jobs as we need.
+	We have to choose only one computer among all k pairs.
+	And it is the same as bipartite matching, because minimum vertex cover in bipartite graph is the same as maximum matching.
+	Bipartite matching is easy to do using maxflow algorithm either kuhn/hopcroft-karp.
+	The code below uses Ford-Fulkerson.
+*/
+#include <bits/stdc++.h>
+using namespace std;
+#define max3(a, b, c) max(a, max(b, c))
+#define min3(a, b, c) min(a, min(b, c))
+#define mp make_pair
+#define f first
+#define se second
+#define pb push_back
+#define ppb pop_back
+#define ll long long
+#define ull unsigned long long
+#define cntbit(x) __builtin_popcount(x)
+#define uset unordered_set
+#define umap unordered_map
+#define pii pair<int, int>
+#define ld long double
+#define pll pair<long long, long long>
+
+struct edge {
+	int v, c, f;
+};
+
+const int inf = 2e9;
+const int S = 1e3 + 1;
+const int T = 1e3 + 2;
+const int N = 2e3 + 15;
+int n, m, k, ans;
+vector <int> g[N];
+vector <edge> e;
+bool used[N];
+
+void add_edge(int i, int j, int c) {
+	e.push_back({j, c, 0});
+	g[i].push_back(e.size() - 1);
+
+	e.push_back({i, 0, 0});
+	g[j].push_back(e.size() - 1);
+}
+
+int dfs(int v, int cmin) {
+	used[v] = true;
+	if(v == T)
+		return cmin;
+	for(int ind : g[v]) {
+		if(!used[e[ind].v] && e[ind].f < e[ind].c) {
+			int flow_change = dfs(e[ind].v, min(cmin, e[ind].c - e[ind].f));
+			if(flow_change) {
+				e[ind].f += flow_change;
+				e[ind ^ 1].f -= flow_change;
+				return flow_change;
+			}
+		}
+	}
+	return 0;
+}
+
+int main() {
+	while(1) {
+		e.clear();
+		for(int i = 0; i < N; ++i)
+			g[i].clear();
+		cin >> n;
+		if(!n)
+			return 0;
+		cin >> m >> k;
+		for(int i = 0; i < k; ++i) {
+			int x, u, v;
+			cin >> x >> u >> v;
+			if(u && v)
+				add_edge(u, v + n, 1);
+		}
+		for(int i = 0; i < n; ++i)
+			add_edge(S, i, 1);
+		for(int i = 0; i < m; ++i)
+			add_edge(i + n, T, 1);
+		ans = 0;
+		for(;;) {
+			memset(used, 0, sizeof(used));
+			int x = dfs(S, inf);
+			if(!x)
+				break;
+			ans += x;
+		}
+		cout << ans << endl;
+	}
+	return 0;
+}

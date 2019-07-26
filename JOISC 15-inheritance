@@ -1,0 +1,68 @@
+/*
+	Observation 1: the maximum subset of some set of edges without cycles is maximum spanning tree
+	Observation 2: we do not need to sort edges everytime, so we can reach O(m * logm + k * m * alpha(n)) by launching prim's algorithm k times
+	Observation 3: the only thing screwing up just taking all the edges for first inheritant is whether vertices are in the same component (to stick to the original condition "without cycles"),
+				   so we can do binary search to find the minimum moment when a pair of vertices is not in the same component
+*/
+
+#include <bits/stdc++.h>
+using namespace std;
+
+const int M = 3e5 + 15;
+const int N = 1e3 + 15;
+const int K = 1e4 + 15;
+int n, m, k, p[N][K], sz[N][K], ans[M];
+
+struct edge {
+	int c, u, v, ind;
+	bool operator < (const edge &b) const {
+		return c > b.c;
+	}
+} e[M];
+
+int find(int v, int i) {
+	if(p[v][i] == v)
+		return v;
+	return p[v][i] = find(p[v][i], i);
+}
+
+void unio(int a, int b, int i) {
+	a = find(a, i);
+	b = find(b, i);
+	if(a != b) {
+		if(sz[a][i] < sz[b][i])
+			swap(a, b);
+		p[b][i] = a;
+		sz[a][i] += sz[b][i];
+	}
+}
+
+int main() {
+	scanf("%d%d%d", &n, &m, &k);
+	for(int i = 0; i < m; ++i)
+		scanf("%d%d%d", &e[i].u, &e[i].v, &e[i].c), e[i].ind = i;
+
+	sort(e, e + m);
+
+	for(int i = 0; i < N; ++i)
+		for(int j = 0; j < K; ++j)
+			p[i][j] = i, sz[i][j] = 1;
+
+	for(int i = 0; i < m; ++i) {
+		int l = 1, r = k, res = 0;
+		while(l <= r) {
+			int mid = l + r >> 1;
+			if(find(e[i].u, mid) == find(e[i].v, mid))
+				l = mid + 1;
+			else
+				res = mid, r = mid - 1;
+		}
+		if(res) {
+			unio(e[i].u, e[i].v, res);
+			ans[e[i].ind] = res;
+		}
+	}
+	for(int i = 0; i < m; ++i)
+		printf("%d\n", ans[i]);
+	return 0;
+}

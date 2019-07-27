@@ -1,0 +1,20 @@
+/*
+  https://img.atcoder.jp/arc064/editorial.pdf
+*/
+
+#include <bits/stdc++.h>
+using namespace std;
+
+const int N = 1e5 + 15;
+int n, m, a[N];
+string s;
+
+int main() {
+    ios_base::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+    cin >> s; n = s.size();
+    if((n % 2 == 0) ^ (s[0] != s[n - 1]))
+        cout << "First";
+    else
+        cout << "Second";
+    return 0;
+}

@@ -1,0 +1,52 @@
+/*
+	https://github.com/mostafa-saad/MyCompetitiveProgramming/blob/master/Olympiad/Balkan/official/2011/cmp-sol.pdf
+*/
+
+#include <bits/stdc++.h>
+#include "cmp.h"
+using namespace std;
+
+const int num[4] = {12, 10, 8, 6};
+const int st[4] = {480, 48, 6, 1};
+const int ind[4] = {100, 200, 300, 400};
+vector <int> uniq[4096];
+bool flag;
+
+void remember(int n) {
+    if(!flag) {
+        flag = true;
+        for(int i = 0; i < 4096; ++i) {
+            int now = i, base = 1;
+            for(int j = 0; j < 4; ++j) {
+                int x = now / st[j];
+                uniq[i].push_back(ind[j] + x);
+                now %= st[j];
+            }
+        }
+    }
+    for(int i = 0; i < uniq[n].size(); ++i)
+        bit_set(uniq[n][i]);
+}
+
+int compare(int b) {
+    for(int i = 0; i < uniq[b].size(); ++i) {
+        int ost = uniq[b][i] - ind[i];
+        if(bit_get(ost + ind[i]))
+            continue;
+        if(ost + ost < num[i]) {
+            --ost;
+            for(; ost >= 0; --ost)
+                if(bit_get(ost + ind[i]))
+                    return 1;
+            return -1;
+        }
+        else {
+            ++ost;
+            for(; ost < num[i]; ++ost)
+                if(bit_get(ost + ind[i]))
+                    return -1;
+            return 1;
+        }
+    }
+    return 0;
+}

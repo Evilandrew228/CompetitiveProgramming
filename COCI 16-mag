@@ -1,0 +1,83 @@
+/*
+    Suppose our current path is x/z, and we can go to node with magic y, then magic of new path is (x * y) / (z + 1)
+    Suppose it is better, then (x * y) / (z + 1) < (x / z)
+    Having solved, we get that it is true only if y = 1.
+    So our aim is to take the longest path consisting of 1s (and at most one x > 1).
+*/
+
+#include <bits/stdc++.h>
+using namespace std;
+ 
+#define int long long
+ 
+const int inf = 2e18;
+const int N = 2e6 + 15;
+int n, m, a[N], dp[N], dpup[N], par[N];
+vector <int> g[N];
+pair <int, int> ans = make_pair(0LL, 0LL);
+bool used[N];
+
+void dfs(int v, int p = 0) {
+    int now = 0;
+    for(int to : g[v])
+        if(p != to) {
+            dfs(to, v);
+            now = max(now, dp[to]);
+        }
+    pair <int, int> x = {a[v], dpup[v] + 1LL + now};
+    int c = __gcd(x.first, x.second);
+    if(c)
+        x.first /= c, x.second /= c;
+    if(ans == make_pair(0LL, 0LL) || x.first * ans.second < ans.first * x.second)
+        ans = x;
+}
+ 
+void calc(int v, int p = 0) {
+    dp[v] = (a[v] == 1);
+    for(int to : g[v])
+        if(to != p) {
+            calc(to, v);
+            if(a[v] == 1)
+                dp[v] = max(dp[v], dp[to] + 1);
+        }
+}
+
+void calc_up(int v, int p = -1, int now = 0) {
+    dpup[v] = now;
+    multiset <int> cur = {};
+    for(int to : g[v])
+        if(to != p)
+            cur.insert(dp[to]);
+    for(int to : g[v]) {
+        if(to != p) {
+            cur.erase(cur.find(dp[to]));
+            calc_up(to, v, (a[v] == 1 ? max((cur.empty() ? 0 : *cur.rbegin()), now) + 1 : 0));
+            cur.insert(dp[to]);
+        }
+    }
+}
+
+#undef int
+ 
+int main() {
+    #define int long long
+    ios_base::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+    cin >> n;
+    for(int i = 1; i < n; ++i) {
+        int u, v;
+        cin >> u >> v;
+        g[u].push_back(v);
+        g[v].push_back(u);
+    }
+    for(int i = 1; i <= n; ++i) {
+        cin >> a[i];
+        pair <int, int> x = {a[i], 1LL};
+        if(ans == make_pair(0LL, 0LL) || a[i] < ans.first)
+            ans = x;
+    }
+    calc(1);
+    calc_up(1);
+    dfs(1);
+    cout << ans.first << '/' << ans.second << endl;
+    return 0;
+}

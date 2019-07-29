@@ -1,0 +1,78 @@
+/*
+    Observation 1: m-part and k-pair are trees with common leaves
+    Observation 2: leaves a node can reach is some [l;r] leaves, which does not intersect with other (which are not descendants and parents of the node) nodes' [l;r]
+    Number of segments of k-tree being intersected by segments of m-tree's node is an answer for specific node.
+    The answer is the sum of answers of k-nodes.
+*/
+#include <bits/stdc++.h>
+using namespace std;
+
+const int N = 5e5 + 15;
+int n, m, k, sz[N], u, v, l[N], r[N];
+vector <int> t[N];
+long long ans, cnt;
+vector <int> g[N];
+bool used[N];
+
+void calc(int v) {
+    sz[v] = 1;
+    for(int i = 0; i < g[v].size(); ++i) {
+        calc(g[v][i]);
+        if(!l[v])
+            l[v] = l[g[v][i]];
+        else
+            l[v] = min(l[v], l[g[v][i]]);
+        if(!r[v])
+            r[v] = r[g[v][i]];
+        else
+            r[v] = max(r[v], r[g[v][i]]);
+        sz[v] += sz[g[v][i]];
+    }
+    if(sz[v] == 1)
+        l[v] = v, r[v] = v;
+}
+
+inline void inc(int i, int val) {
+    for(; i <= n; i = (i | (i + 1)))
+        t[i].push_back(val);
+}
+
+inline long long get(int i, int k) {
+    long long res = 0;
+    for(; i >= 1; i = (i & (i + 1)) - 1)
+        res += t[i].end() - upper_bound(t[i].begin(), t[i].end(), k);
+    return res;
+}
+
+inline long long get(int l, int r, int k) {
+    return get(r, k) - get(l - 1, k);
+}
+
+int main() {
+    freopen("volunteers.in", "r", stdin);
+    freopen("volunteers.out", "w", stdout);
+    scanf("%d%d%d", &n, &m, &k);
+    for(int i = 1; i <= n; ++i) {
+        scanf("%d%d", &u, &v);
+        g[v + n + m].push_back(i);
+        g[u + n].push_back(i);
+    }
+    for(int i = 1; i < m; ++i) {
+        scanf("%d", &v);
+        g[v + n].push_back(i + n);
+    }
+    for(int i = 1; i < k; ++i) {
+        scanf("%d", &v);
+        g[v + n + m].push_back(i + n + m);
+    }
+    calc(n + m);
+    calc(k + n + m);
+    for(int i = n + 1; i <= n + m; ++i)
+        inc(l[i], r[i]);
+    for(int i = 0; i < N; ++i)
+        sort(t[i].begin(), t[i].end());
+    for(int i = n + m + 1; i <= n + m + k; ++i)
+        ans += get(1, r[i], l[i] - 1);
+    printf("%lld\n", ans);
+    return 0;
+}

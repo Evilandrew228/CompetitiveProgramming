@@ -1,0 +1,58 @@
+// http://usaco.org/current/data/sol_subrev_platinum_jan17.html
+
+#include <bits/stdc++.h>
+using namespace std;
+
+const int inf = 1e5;
+const int N = 55;
+int n, m, a[N], dp[N][N][N][N];
+
+inline void tmp(int &a, int b) {
+    a = max(a, b);
+}
+
+int rec(int i, int j, int first, int last) {
+    if(first > last)
+        return -inf;
+    if(i > j)
+        return 0;
+    if(i == j)
+        return (a[i] >= first && a[i] <= last);
+    if(dp[i][j][last][first] != -1)
+        return dp[i][j][last][first];
+    int res = 0;
+
+    tmp(res, rec(i + 1, j - 1, first, last));
+    if(a[j] >= first)
+        tmp(res, rec(i + 1, j - 1, a[j], last) + 1);
+    if(a[i] <= last)
+        tmp(res, rec(i + 1, j - 1, first, a[i]) + 1);
+    if(first <= a[j] && a[j] <= a[i] && a[i] <= last)
+        tmp(res, rec(i + 1, j - 1, a[j], a[i]) + 2);
+
+    tmp(res, rec(i + 1, j, first, last));
+    if(a[i] >= first)
+        tmp(res, rec(i + 1, j, a[i], last) + 1);
+
+    tmp(res, rec(i, j - 1, first, last));
+    if(a[j] <= last)
+        tmp(res, rec(i, j - 1, first, a[j]) + 1);
+
+    return dp[i][j][last][first] = res;
+}
+
+int main() {
+    freopen("subrev.in", "r", stdin);
+    freopen("subrev.out", "w", stdout);
+
+    for(int i = 0; i < N; ++i)
+        for(int j = 0; j < N; ++j)
+            for(int k = 0; k < N; ++k)
+                for(int l = 0; l < N; ++l)
+                    dp[i][j][k][l] = -1;
+    cin >> n;
+    for(int i = 1; i <= n; ++i)
+        cin >> a[i];
+    cout << rec(1, n, 0, 50) << endl;
+    return 0;
+}

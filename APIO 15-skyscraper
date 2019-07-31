@@ -1,0 +1,63 @@
+/*
+	https://codeforces.com/blog/entry/17717?#comment-226989
+*/
+
+#include <bits/stdc++.h>
+using namespace std;
+ 
+const int inf = 2e9;
+const int N = 3e4 + 15;
+int n, m, d[N];
+vector <pair <int, int> > g[N];
+pair <int, int> a[N];
+priority_queue <pair <int, int> > q;
+unordered_set <int> used[N], is[N];
+
+int main() {
+	fill(d, d + N, inf);
+    scanf("%d%d", &n, &m);
+    for(int i = 0; i < m; ++i) {
+    	scanf("%d%d", &a[i].first, &a[i].second);
+   		is[a[i].first].insert(a[i].second);
+    }
+    for(int i = 0; i < m; ++i) {
+    	int b = a[i].first, p = a[i].second;
+    	int cnt = 0;
+    	if(used[b].find(p) != used[b].end())
+    		continue;
+    	used[b].insert(p);
+    	while(b - p >= 0) {
+    		b -= p;
+    		g[a[i].first].push_back({++cnt, b});
+	    	if(is[b].find(p) != is[b].end())
+	    		break;
+    	}
+    	b = a[i].first;
+    	cnt = 0;
+    	while(b + p < n) {
+    		b += p;
+    		g[a[i].first].push_back({++cnt, b});
+	    	if(is[b].find(p) != is[b].end())
+	    		break;
+    	}
+    }
+    d[a[0].first] = 0;
+    q.push({0, a[0].first});
+    while(!q.empty()) {
+    	int v = q.top().second, dist = -q.top().first;
+    	q.pop();
+    	if(dist > d[v])
+    		continue;
+    	for(pair <int, int> to : g[v]) {
+    		if(d[to.second] > d[v] + to.first) {
+    			d[to.second] = d[v] + to.first;
+    			q.push({-d[to.second], to.second});
+    		}
+    	}
+    }
+    if(d[a[1].first] == inf)
+    	puts("-1");
+    else
+    	printf("%d\n", d[a[1].first]);
+    return 0;
+}

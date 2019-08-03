@@ -1,0 +1,168 @@
+// https://github.com/mostafa-saad/MyCompetitiveProgramming/blob/master/Olympiad/COCI/official/2014/contest3_solutions
+
+#include <bits/stdc++.h>
+using namespace std;
+
+#define int long long
+
+#define max3(a, b, c) max(a, max(b, c))
+#define min3(a, b, c) min(a, min(b, c))
+#define mp make_pair
+#define f first
+#define se second
+#define pb push_back
+#define ppb pop_back
+#define ll long long
+#define ull unsigned long long
+#define cntbit(x) __builtin_popcount(x)
+#define uset unordered_set
+#define umap unordered_map
+#define pii pair<int, int>
+#define ld long double
+#define pll pair<long long, long long>
+
+const int mod = 1e9 + 7;
+const int inf = 2e9;
+const int N = 5e4 + 15;
+int n, m, dp[2][2][N], cnt[2][2][N], val;
+string s, t;
+vector <int> x, y, d1, d2, x_1;
+
+inline void tmp(int &val, int add) {
+    val = (val + add) % mod;
+}
+
+int calc(int len, int lower1 = 0, int lower2 = 0) {
+    if(len == d2.size())
+        return 1;
+    if(cnt[lower1][lower2][len] != -1)
+        return cnt[lower1][lower2][len];
+    cnt[lower1][lower2][len] = 0;
+    for(int i = 0; i < 10; ++i)
+        for(int j = 0; j < 10; ++j) {
+            int c = (lower1 || i < d1[len]);
+            int d = (lower2 || j < d2[len]);
+            if((i == d1[len] || c) && (j == d2[len] || d))
+                tmp(cnt[lower1][lower2][len], calc(len + 1, c, d));
+        }
+    return cnt[lower1][lower2][len];
+}
+
+int rec(int len = 0, int lower1 = 0, int lower2 = 0) {
+    if(len == d2.size())
+        return 0;
+    if(dp[lower1][lower2][len] != -1)
+        return dp[lower1][lower2][len];
+    dp[lower1][lower2][len] = 0;
+    for(int i = 0; i < 10; ++i)
+        for(int j = 0; j < 10; ++j) {
+            int c = (lower1 || i < d1[len]);
+            int d = (lower2 || j < d2[len]);
+            if((i == d1[len] || c) && (j == d2[len] || d)) {
+                tmp(dp[lower1][lower2][len], calc(len + 1, c, d) * abs(i - j));
+                tmp(dp[lower1][lower2][len], rec(len + 1, c, d));
+            }
+        }
+    return dp[lower1][lower2][len];
+}
+
+inline void clear() {
+    for(int i = 0; i < 2; ++i)
+        for(int j = 0; j < 2; ++j)
+            for(int k = 0; k < 2; ++k)
+                for(int l = 0; l < 2; ++l)
+                    fill(dp[i][j], dp[i][j] + N, -1),
+                    fill(cnt[i][j], cnt[i][j] + N, -1);
+}
+
+inline void initialize() {
+    clear();
+    n = s.size(), m = t.size();
+    for(int i = 0; i < m - n; ++i)
+        x.pb(0);
+    for(int i = 0; i < n; ++i)
+        x.pb(s[i] - '0');
+    for(int i = 0; i < m; ++i)
+        y.pb(t[i] - '0');
+    x_1 = x;
+    for(int i = x_1.size() - 1; i >= 0; --i) {
+        if(x_1[i]) {
+            --x_1[i];
+            break;
+        }
+        else
+            x_1[i] = 9;
+    }
+}
+
+int check() {
+    int l = 0, r = 0;
+    for(int i = 0; i < x.size(); ++i)
+        l = l * 10 + x[i];
+    for(int i = 0; i < y.size(); ++i)
+        r = r * 10 + y[i];
+    int ans = 0;
+    for(int i = 0; i <= r; ++i) {
+        for(int j = 0; j <= r; ++j) {
+            int a = i, b = j;
+            while(a || b) {
+                ans += abs((a % 10) - (b % 10));
+                a /= 10, b /= 10;
+            }
+        }
+    }
+    for(int i = 0; i <= r; ++i) {
+        for(int j = 0; j <= l - 1; ++j) {
+            int a = i, b = j;
+            while(a || b) {
+                ans -= abs((a % 10) - (b % 10));
+                a /= 10, b /= 10;
+            }
+        }
+    }
+    for(int i = 0; i <= l - 1; ++i) {
+        for(int j = 0; j <= l - 1; ++j) {
+            int a = i, b = j;
+            while(a || b) {
+                ans += abs((a % 10) - (b % 10));
+                a /= 10, b /= 10;
+            }
+        }
+    }
+    for(int i = 0; i <= l - 1; ++i) {
+        for(int j = 0; j <= r; ++j) {
+            int a = i, b = j;
+            while(a || b) {
+                ans -= abs((a % 10) - (b % 10));
+                a /= 10, b /= 10;
+            }
+        }
+    }
+    return ans;
+}
+
+#undef int
+
+int main() {
+    #define int long long
+    cin >> s >> t;
+    initialize();
+    d1 = y, d2 = y;
+    val = rec();
+    clear();
+
+    d1 = y, d2 = x_1;
+    val = (val - rec() + mod) % mod;
+    clear();
+
+    d1 = x_1, d2 = x_1;
+    val = (val + rec()) % mod;
+    clear();
+
+    d1 = x_1, d2 = y;
+    val = (val - rec() + mod) % mod;
+    clear();
+
+    cout << val << endl;
+    return 0;
+}

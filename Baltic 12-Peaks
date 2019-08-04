@@ -1,0 +1,137 @@
+// https://github.com/mostafa-saad/MyCompetitiveProgramming/blob/master/Olympiad/Baltic/official/boi2012_solutions/peaks-sol.pdf
+
+#include <bits/stdc++.h>
+using namespace std;
+
+#define max3(a, b, c) max(a, max(b, c))
+#define min3(a, b, c) min(a, min(b, c))
+#define mp make_pair
+#define f first
+#define se second
+#define pb push_back
+#define ppb pop_back
+#define ll long long
+#define ull unsigned long long
+#define cntbit(x) __builtin_popcount(x)
+#define uset unordered_set
+#define umap unordered_map
+#define pii pair<int, int>
+#define ld long double
+#define pll pair<long long, long long>
+ 
+struct peak {
+    int val, x, y;
+    peak() {
+        val = x = y;
+    }
+    peak(int _val, int _x, int _y) {
+        val = _val;
+        x = _x;
+        y = _y;
+    }
+    bool operator < (const peak &b) const {
+        return val > b.val;
+    }
+};
+ 
+const int dx[8] = {1, 1, 1, 0, 0, -1, -1, -1};
+const int dy[8] = {-1, 0, 1, 1, -1, 0, -1, 1};
+const int inf = 2e9;
+const int N = 2e3 + 15;
+const int M = 1e5 + 15;
+int n, m, q, a[N][N], ans[M], sz, sze, cur;
+int ind[N][N], indflat[N][N], last, comp;
+int valOfPeak[M];
+int p[M], maxx[M];
+vector <int> peaks[M];
+peak e[M];
+bool notpeak[M];
+pii ansans[M];
+ 
+inline bool check(int x, int y) {
+    return x > 0 && x <= n && y > 0 && y <= m;
+}
+ 
+void dfs(int x, int y) {
+    indflat[x][y] = comp;
+    for(int k = 0; k < 8; ++k) {
+        int new_x = x + dx[k], new_y = y + dy[k];
+        if(!check(new_x, new_y))
+            continue;
+        if(a[x][y] < a[new_x][new_y])
+            notpeak[comp] = true;
+        if(!indflat[new_x][new_y] && a[new_x][new_y] == a[x][y])
+            dfs(new_x, new_y);
+    }
+}
+ 
+int find(int v) {
+    if(v == p[v])
+        return v;
+    return p[v] = find(p[v]);
+}
+ 
+void unio(int a, int b) {
+    a = find(a);
+    b = find(b);
+    if(a != b) {
+        if(peaks[a].size() < peaks[b].size())
+            swap(a, b);
+        p[b] = a;
+        while(!peaks[a].empty() && !peaks[b].empty()) {
+            if(valOfPeak[peaks[a].back()] >= valOfPeak[peaks[b][0]])
+                break;
+            ans[peaks[a].back()] = cur;
+            peaks[a].ppb();
+        }
+        while(!peaks[b].empty() && !peaks[a].empty()) {
+            if(valOfPeak[peaks[a][0]] <= valOfPeak[peaks[b].back()])
+                break;
+            ans[peaks[b].back()] = cur;
+            peaks[b].ppb();
+        }
+        int x = peaks[a].size();
+        for(int i : peaks[b])
+            peaks[a].pb(i);
+        inplace_merge(peaks[a].begin(), peaks[a].begin() + x, peaks[a].end(), [](int a, int b) { return valOfPeak[a] > valOfPeak[b]; });
+    }
+}
+ 
+int main() {
+    scanf("%d%d", &n, &m);
+    for(int i = 1; i <= n; ++i)
+        for(int j = 1; j <= m; ++j) {
+            scanf("%d", &a[i][j]);
+            e[sze++] = *new peak(a[i][j], i, j);
+        }
+    for(int i = 1; i <= n; ++i)
+        for(int j = 1; j <= m; ++j) {
+            ind[i][j] = ++last;
+            if(!indflat[i][j]) {
+                valOfPeak[++comp] = a[i][j];
+                dfs(i, j);
+            }
+            p[last] = last;
+            if(!notpeak[indflat[i][j]]) {
+                maxx[last] = a[i][j];
+                peaks[last].pb(indflat[i][j]);
+            }
+        }
+    sort(e, e + sze);
+    for(int l = 0; l < sze; ++l) {
+        cur = e[l].val;
+        for(int k = 0; k < 8; ++k) {
+            int x = e[l].x + dx[k], y = e[l].y + dy[k];
+            if(check(x, y) && a[x][y] >= e[l].val)
+                unio(ind[x][y], ind[e[l].x][e[l].y]);
+        }
+    }
+    for(int i = 1; i <= comp; ++i)
+        if(!notpeak[i])
+            ansans[sz++] = mp(valOfPeak[i], ans[i]);
+    sort(ansans, ansans + sz);
+    printf("%d\n", sz);
+    for(int i = sz - 1; i >= 0; --i)
+        printf("%d %d\n", ansans[i].f, ansans[i].se);
+    return 0;
+}

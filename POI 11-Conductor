@@ -1,0 +1,57 @@
+/*
+    One can notice the eduation Hj + sqrt(abs(i - j)) - Hi <= p
+    So, we have to find maximum of the statement in order to determine minimal possible p
+    Notice that Hj + sqrt(abs(i - j)) is motonotone, so we can use Divide-and-Conquer DP optimization
+*/
+
+#include <bits/stdc++.h>
+using namespace std;
+
+#define max3(a, b, c) max(a, max(b, c))
+#define min3(a, b, c) min(a, min(b, c))
+#define mp make_pair
+#define f first
+#define se second
+#define pb push_back
+#define ppb pop_back
+#define ll long long
+#define ull unsigned long long
+#define cntbit(x) __builtin_popcount(x)
+#define uset unordered_set
+#define umap unordered_map
+#define pii pair<int, int>
+#define ld long double
+#define pll pair<long long, long long>
+
+const int inf = 2e9;
+const int N = 1e6 + 15;
+int n, s[N], a[N], dp[N];
+
+void rec(int l, int r, int l2, int r2) {
+    if(l > r)
+        return;
+    int mid = l + r >> 1, opt = l2;
+    for(int i = l2; i <= min(mid, r2); ++i)
+        if(a[opt] + sqrt(abs(mid - opt)) < a[i] + sqrt(abs(mid - i)))
+            opt = i;
+    dp[mid] = max(dp[mid], a[opt] + (int)ceil(sqrt(abs(mid - opt))) - a[mid]);
+    rec(l, mid - 1, l2, opt);
+    rec(mid + 1, r, opt, r2);
+}
+
+int main() {
+    scanf("%d", &n);
+    for(int i = 1; i <= n; ++i)
+        scanf("%d", &a[i]);
+    for(int i = 1; i * i < N; ++i)
+        s[i * i] = i;
+    for(int i = 1; i < N; ++i)
+        s[i] = (s[i] ? s[i] : s[i-1]);
+    rec(1, n, 1, n);
+    reverse(a + 1, a + 1 + n);
+    reverse(dp + 1, dp + 1 + n);
+    rec(1, n, 1, n);
+    for(int i = n; i; --i)
+        printf("%d\n", dp[i]);
+    return 0;
+}

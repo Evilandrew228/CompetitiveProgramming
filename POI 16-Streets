@@ -1,0 +1,151 @@
+// https://github.com/luciocf/OI-Problems/blob/master/POI/POI%202016/streets.cpp
+
+#include <bits/stdc++.h>
+using namespace std;
+
+#define max3(a, b, c) max(a, max(b, c))
+#define min3(a, b, c) min(a, min(b, c))
+#define mp make_pair
+#define f first
+#define se second
+#define pb push_back
+#define ppb pop_back
+#define ll long long
+#define ull unsigned long long
+#define cntbit(x) __builtin_popcount(x)
+#define endl '\n'
+#define uset unordered_set
+#define umap unordered_map
+#define pii pair<int, int>
+#define ld long double
+#define pll pair<long long, long long>
+
+const int inf = 2e9;
+const int N = 1e6 + 15;
+int n, m, p[N], sz[N], ord[N], mn[N], mx[N];
+vector <int> g[N], gr[N], g1[N], gr1[N];
+bool used[N], is[N];
+set <int> ans;
+vector <int> topsort, comp;
+
+void topsort_dfs(int v) {
+	used[v] = true;
+	for(int to : g[v])
+		if(!used[to])
+			topsort_dfs(to);
+	topsort.pb(v);
+}
+
+void relax(int v) {
+	used[v] = true;
+	comp.pb(v);
+	for(int to : gr[v])
+		if(!used[to])
+			relax(to);
+}
+
+void dfs(int v) {
+	used[v] = true;
+	for(int to : g[v]) {
+		if(!used[to])
+			dfs(to);
+		mn[v] = min(mn[v], min(ord[to], mn[to]));
+	}
+}
+
+void rev(int v) {
+	used[v] = true;
+	for(int to : gr[v]) {
+		if(!used[to])
+			rev(to);
+		mx[v] = max(mx[v], max(ord[to], mx[to]));
+	}
+}
+
+int find(int v) {
+	if(v == p[v])
+		return v;
+	return p[v] = find(p[v]);
+}
+
+void unio(int a, int b) {
+	a = find(a);
+	b = find(b);
+	if(a != b) {
+		if(sz[a] < sz[b])
+			swap(a, b);
+		p[b] = a;
+		sz[a] += sz[b];
+	}
+}
+
+void solve() {
+	for(int i = 1; i <= n; ++i) {
+		sz[i] = 1, p[i] = i;
+		if(!used[i])
+			topsort_dfs(i);
+	}
+	memset(used, 0, sizeof(used));
+	for(int i = 0; i < n; ++i) {
+		int v = topsort[n - i - 1];
+		if(!used[v]) {
+			relax(v);
+			for(int x : comp)
+				unio(v, x);
+			comp.clear();
+		}
+	}
+	for(int i = 1; i <= n; ++i)
+		for(int to : g[i])
+			if(find(i) != find(to))
+				g1[find(i)].pb(find(to)), gr1[find(to)].pb(find(i));
+	for(int i = 1; i <= n; ++i)
+		g[i] = g1[i], gr[i] = gr1[i];
+	topsort = {};
+	memset(used, 0, sizeof(used));
+	for(int i = 1; i <= n; ++i)
+		if(!used[find(i)])
+			topsort_dfs(find(i));
+	reverse(topsort.begin(), topsort.end());
+	memset(used, 0, sizeof(used));
+	for(int i = 0; i < topsort.size(); ++i)
+		ord[topsort[i]] = i, mn[topsort[i]] = inf, mx[topsort[i]] = -1;
+	for(int i = 1; i <= n; ++i)
+		if(!used[find(i)])
+			dfs(find(i));
+	memset(used, 0, sizeof(used));
+	for(int i = 1; i <= n; ++i)
+		if(!used[find(i)])
+			rev(find(i));
+	int M = -1;
+	memset(is, 1, sizeof(is));
+	for(int i = 0; i < topsort.size(); ++i) {
+		if(M > i)
+			is[i] = false;
+		M = max(M, mn[topsort[i]]);
+	}
+	M = inf;
+	for(int i = (int)topsort.size() - 1; i >= 0; --i) {
+		if(M < i)
+			is[i] = false;
+		M = min(M, mx[topsort[i]]);
+	}
+	for(int i = 1; i <= n; ++i)
+		if(is[ord[find(i)]])
+			ans.insert(i);
+}
+
+int main() {
+	scanf("%d%d", &n, &m);
+	for(int i = 1; i <= m; ++i) {
+		int u, v;
+		scanf("%d%d", &u, &v);
+		g[u].pb(v);
+		gr[v].pb(u);
+	}
+	solve();
+	printf("%d\n", (int)ans.size());
+	for(int i : ans)
+		printf("%d ", i);
+	return 0;
+}

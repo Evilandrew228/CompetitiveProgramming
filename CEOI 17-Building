@@ -1,0 +1,104 @@
+/*
+	That is quite default Convex-hull-trick task:
+	Let's imagine some line on the plot as some function (k * x + b)
+	Then (Hi - Hj) * (Hi - Hj) = Hi * Hi - (2 * Hj) * Hi + (Hj * Hj)
+											  k		  x		   b
+	The difficulty is that Hj are not sorted.
+	There are some ways to deal with, for example: code your own bst either use std::set (the one used below), code Li-Chao tree, do some bucket-technique.
+	In order to maintain number of removed pillars one can maintain prefix sums, and put them in b-coefficient.
+*/
+
+#include <bits/stdc++.h>
+using namespace std;
+
+#define max3(a, b, c) max(a, max(b, c))
+#define min3(a, b, c) min(a, min(b, c))
+#define mp make_pair
+#define f first
+#define se second
+#define pb push_back
+#define ppb pop_back
+#define ll long long
+#define ull unsigned long long
+#define cntbit(x) __builtin_popcount(x)
+#define endl '\n'
+#define uset unordered_set
+#define umap unordered_map
+#define pii pair<int, int>
+#define ld long double
+#define pll pair<long long, long long>
+
+const ll inf = 2e15;
+const int N = 1e5 + 15;
+ll n, a[N], w[N], p[N], dp[N];
+
+struct line {
+	ll k, b;
+	line() {
+		k = b = 0;
+	}
+	line(ll k, ll b) : k(k), b(b) {}
+	mutable function <const line *()> succ;
+	bool operator < (const line &c) const {
+		if(c.b != inf)
+			return k < c.k;
+		const line *s = succ();
+		if(!s)
+			return 0;
+		return b - s->b < (s->k - k) * c.k;
+	}
+	ll get(ll x) {
+		return k * x + b;
+	}
+};
+
+struct Hull : public multiset <line> {
+	inline bool bad(iterator y) {
+		auto z = next(y);
+		if(y == begin()) {
+			if(z == end())
+				return 0;
+			return y->k == z->k && y->b <= z->b;
+		}
+		auto x = prev(y);
+		if(z == end())
+			return y->k == x->k && y->b <= x->b;
+		return (x->b - y->b) * (z->k - y->k) >= (y->b - z->b) * (y->k - x->k);
+	}
+	void insert_line(line nw) {
+		auto y = insert(nw);
+		y->succ = [=] {
+			return next(y) == end() ? 0 : &*next(y);
+		};
+		if(bad(y))
+			return void(erase(y));
+		while(next(y) != end() && bad(next(y)))
+			erase(next(y));
+		while(y != begin() && bad(prev(y)))
+			erase(prev(y));
+	}
+	ll val(ll x) {
+		auto now = lower_bound(*new line(x, inf));
+		return now->k * x + now->b;
+	}
+};
+
+Hull hull;
+
+int main() {
+	cin >> n;
+	for(int i = 1; i <= n; ++i)
+		cin >> a[i];
+	for(int i = 1; i <= n; ++i) {
+		cin >> w[i];
+		p[i] = p[i-1] + w[i];
+	}
+	hull.insert_line(*new line(2 * a[1], -a[1] * a[1] + p[1]));
+	dp[1] = 0;
+	for(int i = 2; i <= n; ++i) {
+		dp[i] = -hull.val(a[i]) + a[i] * a[i] + p[i-1];
+		hull.insert_line(*new line(2 * a[i], -a[i] * a[i] - dp[i] + p[i]));
+	}
+	cout << dp[n] << endl;
+	return 0;
+}

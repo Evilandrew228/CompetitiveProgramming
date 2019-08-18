@@ -1,0 +1,83 @@
+// https://github.com/mostafa-saad/MyCompetitiveProgramming/blob/master/Olympiad/Baltic/official/boi2012_solutions/melody-sol.pdf
+
+#include <bits/stdc++.h>
+using namespace std;
+ 
+const int inf = 2e9;
+const int N = 1e2 + 15;
+const int M = 1e5 + 15;
+int n, s, g, l, pos = 1, dp[M], a[M], b[N][N], c[M][N];
+int is[N][N], st[N][N], back[M];
+vector <int> ans;
+
+void par(int s, int t) {
+    if(is[s][t] == 1)
+        ans.push_back(t);
+    else {
+	    par(s, st[s][t]);
+	    par(st[s][t], t);
+	}
+}
+
+int main() {
+	ios_base::sync_with_stdio(0); cout.tie(0); cin.tie(0);
+	for(int i = 0; i < N; ++i)
+		fill(is[i], is[i] + N, inf);
+	cin >> n >> s >> g;
+	for(int i = 1; i <= n; ++i)
+		for(int j = 1; j <= s; ++j) {
+			char c;
+			cin >> c;
+			b[i][j] = c - '0';
+		}
+	for(int i = 1; i <= n; ++i) {
+		for(int j = 1; j <= n; ++j) {
+			int now = 0;
+			for(int k = 1; k <= s; ++k)
+				now += b[i][k] != b[j][k];
+			if(now <= g)
+				is[i][j] = 1;
+		}
+	}
+	for(int k = 1; k <= n; ++k)
+		for(int i = 1; i <= n; ++i)
+			for(int j = 1; j <= n; ++j)
+				if(is[i][k] != inf && is[k][j] != inf && is[i][k] + is[k][j] < is[i][j])
+					is[i][j] = is[i][k] + is[k][j], st[i][j] = k;
+	cin >> l;
+	for(int i = 1; i <= l; ++i) {
+		cin >> a[i];
+		for(int j = 1; j <= n; ++j)
+			if(is[j][a[i]] < i && dp[c[i - is[j][a[i]]][j]] > dp[i])
+				dp[i] = dp[c[i - is[j][a[i]]][j]],
+				back[i] = c[i - is[j][a[i]]][j];
+		++dp[i];
+		if(dp[i] > dp[pos])
+			pos = i;
+		memcpy(c[i], c[i-1], sizeof(int) * N);
+		c[i][a[i]] = i;
+	}
+	cout << l - dp[pos] << endl;
+	stack <int> rev;
+	while(pos) {
+		rev.push(pos);
+		pos = back[pos];
+	}
+	for(int i = 0; i < rev.top(); ++i)
+		ans.push_back(a[rev.top()]);
+	while(rev.size() >= 2) {
+		int s = rev.top();
+		rev.pop();
+		int t = rev.top();
+		int len = is[a[s]][a[t]];
+		for(int i = 0; i < t - s - len; ++i)
+			ans.push_back(a[s]);
+		par(a[s], a[t]);
+	}
+	for(int i = rev.top(); i < l; ++i)
+		ans.push_back(a[rev.top()]);
+	for(int i : ans)
+		cout << i << ' ';
+	cout << endl;
+	return 0;
+}

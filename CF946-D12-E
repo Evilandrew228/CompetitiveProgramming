@@ -1,0 +1,81 @@
+// https://codeforces.com/blog/entry/58210
+
+#include <iostream>
+#include <string>
+#include <cstring>
+#include <vector>
+#include <map>
+#include <algorithm>
+#include <math.h>
+#include <utility>
+#include <set>
+#include <time.h>
+#include <list>
+#include <typeinfo>
+#include <cstdio>
+#include <numeric>
+#include <stdio.h>
+using namespace std;
+
+#define max3(a, b, c) max(a, max(b, c))
+#define min3(a, b, c) min(a, min(b, c))
+#define mp make_pair
+#define f first
+#define se second
+#define pb push_back
+#define ppb pop_back
+#define ll long long
+#define ull unsigned long long
+#define cntbit(x) __builtin_popcount(x)
+#define endl '\n'
+#define uset unordered_set
+#define umap unordered_map
+#define pii pair<int, int>
+#define ld long double
+#define pll pair<long long, long long>
+
+const int N = 2e5 + 15;
+const int L = 10;
+int n, t, a[N], cnt[L];
+string s;
+vector <int> odd;
+
+int main() {
+	ios_base::sync_with_stdio(0); cout.tie(0); cin.tie(0);
+	cin >> t;
+	while(t--) {
+		cin >> s; n = s.size();
+		memset(cnt, 0, sizeof(cnt));
+		for(int i = 0; i < n; ++i) {
+			a[i] = s[i] - '0';
+			cnt[a[i]] ^= 1;
+		}
+		for(int i = n - 1; i >= 0; --i) {
+			cnt[a[i]] ^= 1;
+			for(int k = a[i] - 1; k >= 0 + (i == 0); --k) {
+				cnt[k] ^= 1;
+				odd.clear();
+				for(int j = 9; j >= 0; --j)
+					if(cnt[j])
+						odd.pb(j);
+				if(n - i > odd.size()) {
+					for(int j = 0; j < i; ++j)
+						cout << a[j];
+					cout << k;
+					for(int j = n - i - 1 - odd.size(); j > 0; --j)
+						cout << 9;
+					for(int j : odd)
+						cout << j;
+					cout << endl;
+					goto z;
+				}
+				cnt[k] ^= 1;
+			}
+		}
+		for(int i = 0; i < n - 2; ++i)
+			cout << 9;
+		cout << endl;
+		z:;
+	}
+	return 0;
+}

@@ -1,0 +1,19 @@
+// https://codeforces.com/blog/entry/3047
+
+#include <stdio.h>
+#include <algorithm>
+using namespace std;
+
+int a, b, xa, ya, xb, yb;
+
+int main() {
+	scanf("%d%d%d%d%d%d", &a, &b, &xa, &ya, &xb, &yb);
+	a <<= 1, b <<= 1;
+	int x1 = (xa + ya), y1 = (xa - ya), x2 = (xb + yb), y2 = (xb - yb);
+ 
+	int sector_1_x = (x1 / a) - (x1 < 0), sector_1_y = (y1 / b) - (y1 < 0);
+	int sector_2_x = (x2 / a) - (x2 < 0), sector_2_y = (y2 / b) - (y2 < 0);
+ 
+	printf("%d\n", max(abs(sector_1_x - sector_2_x), abs(sector_1_y - sector_2_y)));
+	return 0;
+}

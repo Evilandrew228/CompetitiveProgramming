@@ -1,0 +1,166 @@
+/*
+	Let's try some greedy/randomized solution.
+	Firstly, having sorted all vertices by degree, we try to make an independent set.
+	If its size >= n, then terminate.
+	Otherwise make almost the same sorting, but by sum of vertices of a specific edge.
+	Try to generate matching.
+	If its size >= n, then terminate.
+	In the end, after greedy solution has not suited, we try to re-order vertices randomly.
+	Owing to the special structure of the graph, we have a high probability of catching one of sets
+*/
+
+#include <iostream>
+#include <string>
+#include <cstring>
+#include <vector>
+#include <map>
+#include <algorithm>
+#include <math.h>
+#include <utility>
+#include <set>
+#include <time.h>
+#include <list>
+#include <typeinfo>
+#include <cstdio>
+#include <numeric>
+#include <stdio.h>
+using namespace std;
+
+#define max3(a, b, c) max(a, max(b, c))
+#define min3(a, b, c) min(a, min(b, c))
+#define mp make_pair
+#define f first
+#define se second
+#define pb push_back
+#define ppb pop_back
+#define ll long long
+#define ull unsigned long long
+#define cntbit(x) __builtin_popcount(x)
+#define endl '\n'
+#define uset unordered_set
+#define umap unordered_map
+#define pii pair<int, int>
+#define ld long double
+#define pll pair<long long, long long>
+
+const int inf = 2e9;
+const int N = 5e5 + 15;
+int n, m, t;
+bool used[N];
+vector <pii> edges;
+vector <int> indset, matching, possible, g[N];
+
+void clear() {
+	matching.clear(), edges.clear(), indset.clear(), possible.clear();
+	for(int i = 1; i <= 3 * n; ++i)
+		used[i] = false,
+		g[i].clear();
+}
+
+bool checklast() {
+	possible.clear();
+	for(int i = 1; i <= 3 * n; ++i)
+		possible.pb(i);
+	for(int iter = 0; iter < 100; ++iter) {
+		for(int i = 1; i <= 3 * n; ++i)
+			used[i] = false;
+		indset.clear();
+		random_shuffle(possible.begin(), possible.end());
+		for(int v : possible) {
+			indset.pb(v);
+			used[v] = true;
+			for(int to : g[v]) {
+				if(used[to]) {
+					used[v] = false;
+					indset.ppb();
+					break;
+				}
+			}
+		}
+		if(indset.size() >= n) {
+			puts("IndSet");
+			for(int i = 0; i < n; ++i)
+				printf("%d ", indset[i]);
+			puts("");
+			return true;
+		}
+	}
+	possible.clear();
+	for(int i = 0; i < m; ++i)
+		possible.pb(i);
+	for(int iter = 0; iter < 100; ++iter) {
+		matching.clear();
+		for(int i = 1; i <= 3 * n; ++i)
+			used[i] = false;
+		random_shuffle(possible.begin(), possible.end());
+		for(int i : possible)
+			if(!used[edges[i].f] && !used[edges[i].se]) {
+				matching.pb(i + 1);
+				used[edges[i].f] = used[edges[i].se] = true;
+			}
+		if(matching.size() >= n) {
+			puts("Matching");
+			for(int i = 0; i < n; ++i)
+				printf("%d ", matching[i]);
+			puts("");
+			return true;
+		}
+	}
+	return false;
+}
+
+int main() {
+	scanf("%d", &t);
+	while(t--) {
+		clear();
+		scanf("%d%d", &n, &m);
+		for(int i = 1; i <= m; ++i) {
+			int u, v;
+			scanf("%d%d", &u, &v);
+			edges.pb(mp(min(u, v), max(u, v)));
+			g[u].pb(v);
+			g[v].pb(u);
+		}
+		for(int i = 1; i <= 3 * n; ++i)
+			possible.pb(i);
+		sort(possible.begin(), possible.end(), [](int a, int b) -> bool { return g[a].size() < g[b].size(); });
+		for(int v : possible) {
+			indset.pb(v);
+			used[v] = true;
+			for(int to : g[v])
+				if(used[to]) {
+					used[v] = false;
+					indset.ppb();
+					break;
+				}
+		}
+		if(indset.size() >= n) {
+			puts("IndSet");
+			for(int i = 0; i < n; ++i)
+				printf("%d ", indset[i]);
+			puts("");
+			continue;
+		}
+		possible.clear();
+		for(int i = 0; i < m; ++i)
+			possible.pb(i);
+		sort(possible.begin(), possible.end(), [](int a, int b) { return g[edges[a].f].size() + g[edges[a].se].size() < g[edges[b].f].size() + g[edges[b].se].size(); });		
+		for(int i = 1; i <= 3 * n; ++i)
+			used[i] = false;
+		for(int i : possible)
+			if(!used[edges[i].f] && !used[edges[i].se]) {
+				matching.pb(i + 1);
+				used[edges[i].f] = used[edges[i].se] = true;
+			}
+		if(matching.size() >= n) {
+			puts("Matching");
+			for(int i = 0; i < n; ++i)
+				printf("%d ", matching[i]);
+			puts("");
+			continue;
+		}
+		if(!checklast())
+			puts("Impossible");
+	}
+	return 0;
+}

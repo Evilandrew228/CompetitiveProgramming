@@ -1,0 +1,61 @@
+// https://codeforces.com/blog/entry/62563
+
+#include <iostream>
+#include <string>
+#include <cstring>
+#include <vector>
+#include <map>
+#include <algorithm>
+#include <math.h>
+#include <utility>
+#include <set>
+#include <time.h>
+#include <list>
+#include <typeinfo>
+#include <cstdio>
+#include <numeric>
+#include <stdio.h>
+using namespace std;
+ 
+#define max3(a, b, c) max(a, max(b, c))
+#define min3(a, b, c) min(a, min(b, c))
+#define mp make_pair
+#define f first
+#define se second
+#define pb push_back
+#define ppb pop_back
+#define ll long long
+#define ull unsigned long long
+#define cntbit(x) __builtin_popcount(x)
+#define endl '\n'
+#define uset unordered_set
+#define umap unordered_map
+#define pii pair<int, int>
+#define ld long double
+#define pll pair<long long, long long>
+
+const int inf = 2e9;
+const int N = 2e5 + 15;
+int n, k, a[N], p[N];
+map <int, ll> cnt;
+ll ans;
+
+int main() {
+	scanf("%d%d", &n, &k);
+	for(int i = 1; i <= n; ++i) {
+		scanf("%d", &a[i]);
+		p[i] = p[i-1] ^ a[i];
+	}
+	++cnt[0];
+	k = (1 << k) - 1;
+	for(int i = 1; i <= n; ++i) {
+		if(cnt[p[i] ^ k] < cnt[p[i]])
+			p[i] ^= k;
+		++cnt[p[i]];
+	}
+	ans = 1LL * n * (n + 1) / 2;
+	for(auto it : cnt)
+		ans -= it.se * (it.se - 1) / 2;
+	cout << ans << endl;
+	return 0;
+}

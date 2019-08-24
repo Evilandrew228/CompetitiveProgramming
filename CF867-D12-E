@@ -1,0 +1,71 @@
+// https://codeforces.com/blog/entry/54888
+
+#include <iostream>
+#include <string>
+#include <queue>
+#include <cstring>
+#include <vector>
+#include <map>
+#include <algorithm>
+#include <math.h>
+#include <utility>
+#include <set>
+#include <time.h>
+#include <list>
+#include <typeinfo>
+#include <cstdio>
+#include <numeric>
+#include <stack>
+#include <stdio.h>
+using namespace std;
+ 
+#define max3(a, b, c) max(a, max(b, c))
+#define min3(a, b, c) min(a, min(b, c))
+#define mp make_pair
+#define f first
+#define se second
+#define pb push_back
+#define ppb pop_back
+#define ll long long
+#define ull unsigned long long
+#define cntbit(x) __builtin_popcount(x)
+#define endl '\n'
+#define uset unordered_set
+#define umap unordered_map
+#define pii pair<int, int>
+#define ld long double
+#define pll pair<long long, long long>
+
+int n, a;
+ll ans;
+multiset <int> s, not_used;
+
+int main() {
+	scanf("%d", &n);
+	for(int i = 1; i <= n; ++i) {
+		scanf("%d", &a);
+		if(s.empty() && not_used.empty())
+			not_used.insert(a);
+		else if(s.empty() || (!not_used.empty() && *not_used.begin() < *s.begin())) {
+			if(a > *not_used.begin()) {
+				ans += a - *not_used.begin();
+				not_used.erase(not_used.begin());
+				s.insert(a);
+			}
+			else
+				not_used.insert(a);
+		}
+		else if(not_used.empty() || *s.begin() <= *not_used.begin()) {
+			if(a > *s.begin()) {
+				ans += a - *s.begin();
+				not_used.insert(*s.begin());
+				s.erase(s.begin());
+				s.insert(a);
+			}
+			else
+				not_used.insert(a);
+		}
+	}
+	printf("%lld\n", ans);
+	return 0;
+}

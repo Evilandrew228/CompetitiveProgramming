@@ -1,0 +1,52 @@
+#include <cstdio>
+#include <cassert>
+#include <stdio.h>
+#include <iostream>
+#include <algorithm>
+#include <math.h>
+#include <vector>
+#include <stack>
+#include <map>
+using namespace std;
+ 
+const int N = 2e5 + 15;
+int n, a[N], t[N];
+map <int, stack <int> > ord;
+ 
+inline void inc(int i, int val) {
+	for(; i <= n; i = (i | (i + 1)))
+		t[i] += val;
+}
+ 
+inline int get(int i) {
+	int res = 0;
+	for(; i >= 1; i = (i & (i + 1)) - 1)
+		res += t[i];
+	return res;
+}
+ 
+inline int get(int l, int r) {
+	return get(r) - get(l - 1);
+}
+ 
+long long count_swaps(vector<int> s) {
+	n = s.size();
+	long long ans = 0;
+	for(int i = 0; i < n; ++i)
+		a[i + 1] = s[i];
+	for(int i = n; i; --i)
+		ord[a[i]].push(i);
+	for(int i = 1; i < n; ++i) {
+		if(ord[a[i]].empty() || ord[a[i]].top() != i)
+			continue;
+		ord[a[i]].pop();
+		int j = ord[-a[i]].top();
+		ord[-a[i]].pop();
+		if(a[i] < 0)
+			ans += j - i - 1 - get(i, j);
+		else
+			ans += j - i - get(i, j);
+		inc(j, 1);
+	}
+	return ans;
+}

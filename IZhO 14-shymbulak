@@ -1,0 +1,115 @@
+// https://github.com/tmwilliamlin168/CompetitiveProgramming/blob/master/IZhO/14-Shymbulak.cpp
+
+#include <iostream>
+#include <string>
+#include <cstring>
+#include <vector>
+#include <map>
+#include <set>
+#include <algorithm>
+#include <math.h>
+#include <cstdio>
+#include <stdio.h>
+#include <queue>
+#include <deque>
+using namespace std;
+
+#define max3(a, b, c) max(a, max(b, c))
+#define min3(a, b, c) min(a, min(b, c))
+#define mp make_pair
+#define f first
+#define se second
+#define pb push_back
+#define ppb pop_back
+#define ll long long
+#define ull unsigned long long
+#define cntbit(x) __builtin_popcount(x)
+#define endl '\n'
+#define uset unordered_set
+#define umap unordered_map
+#define pii pair<long long, long long>
+#define ld long double
+#define pll pair<long long, long long>
+
+#define int long long
+
+const int inf = 2e9;
+const int N = 2e5 + 15;
+int n, mx, parent[N], sz;
+pii d[N], ans;
+vector <int> g[N], cycle;
+bool used[N], is[N];
+map <int, int> cnt;
+multiset <int> cur;
+
+bool find_cycle(int v, int p = -1) {
+	used[v] = true;
+	parent[v] = p;
+	for(int to : g[v]) {
+		if(to != p) {
+			if(used[to]) {
+				int u = v;
+				is[u] = true;
+				cycle.pb(u);
+				while(u != to) {
+					u = parent[u];
+					cycle.pb(u);
+					is[u] = true;
+				}
+				return true;
+			}
+			else if(find_cycle(to, v))
+				return true;
+		}
+	}
+	return false;
+}
+
+inline void combine(pii &a, pii b) {
+	if(a.f == b.f)
+		a.se += b.se;
+	else if(a.f < b.f)
+		a = b;
+}
+
+void dfs_tree(int v, int p = -1) {
+	d[v] = mp(0, 1);
+	for(int to : g[v])
+		if(to != p && !is[to]) {
+			dfs_tree(to, v);
+			++d[to].f;
+			combine(ans, mp(d[v].first + d[to].first, d[v].second * d[to].second));
+			combine(d[v], d[to]);
+		}
+}
+
+#undef int
+
+int main() {
+	#define int long long
+	cin >> n;
+	for(int i = 1; i <= n; ++i) {
+		int u, v;
+		cin >> u >> v;
+		g[u].pb(v);
+		g[v].pb(u);
+	}
+	find_cycle(1);
+	sz = cycle.size();
+	for(int i : cycle)
+		dfs_tree(i);
+	for(int i = 0; i < sz + sz/2; ++i) {
+		if(i >= sz/2)
+			combine(ans, mp(d[cycle[i % sz]].f + i + *cur.rbegin(), 0)),
+			cur.erase(cur.find(d[cycle[i - sz/2]].f - i + sz/2));
+		cur.insert(d[cycle[i % sz]].f - i);
+	}
+	for(int i = 0; i < sz + sz/2; ++i) {
+		if(i >= sz / 2)
+			ans.se += d[cycle[i % sz]].se * cnt[ans.f - d[cycle[i % sz]].f - i],
+			cnt[d[cycle[i - sz/2]].f - i + sz/2] -= d[cycle[i - sz/2]].se;
+		cnt[d[cycle[i % sz]].f - i] += d[cycle[i % sz]].se;
+	}
+	cout << ans.se << endl;
+	return 0;
+}

@@ -1,0 +1,50 @@
+// https://github.com/quangloc99/CompetitiveProgramming/blob/master/olympiad/IZhO/2017/subsequence.cpp
+
+#include <stdio.h>
+#include <algorithm>
+using namespace std;
+
+const int N = 1e5 + 1;
+const int M = 1 << 10;
+const int K = 21;
+int n, a[N], k[N], dp[N], f[M][M][K], back[N];
+
+void rec(int i) {
+	if(i) {
+		rec(back[i]);
+		printf("%d ", i);
+	}
+}
+
+int main() {
+	scanf("%d", &n);
+	for(int i = 1; i <= n; ++i)
+		scanf("%d", &a[i]);
+	for(int i = 1; i <= n; ++i)
+		scanf("%d", &k[i]);
+	for(int i = 1; i <= n; ++i) {
+		dp[i] = 1;
+		int bit = (i & 1), second_half = 0, first_half = 0;
+		for(int j = 0; j < 10; ++j) {
+			if((1024 << j) & a[i])
+				second_half |= (1 << j);
+			if((1 << j) & a[i])
+				first_half |= (1 << j);
+		}
+		for(int mask = 0; mask < M; ++mask) {
+			int k2 = k[i] - __builtin_popcount(mask & first_half);
+			if(k2 >= 0 && dp[f[mask][second_half][k2]] + 1 > dp[i])
+				dp[i] = dp[f[mask][second_half][k2]] + 1,
+				back[i] = f[mask][second_half][k2];
+		}
+		for(int mask = 0; mask < M; ++mask) {
+			int k1 = __builtin_popcount(mask & second_half);
+			if(dp[i] > dp[f[first_half][mask][k1]])
+				f[first_half][mask][k1] = i;
+		}
+	}
+	int ans = max_element(dp + 1, dp + 1 + n) - dp;
+	printf("%d\n", dp[ans]);
+	rec(ans);
+	return 0;
+}

@@ -1,0 +1,134 @@
+/*
+	Observe that a[x] - d(x, y) = a[x] - d(x, mutual_centroid) - d(mutual_centroid, y)
+	After we found an appropriate city for every city, we construct a new graph.
+	Notice that in the new graph there is always a cycle.
+	Find the period of the cycle and then find the answer.
+*/
+
+#include <iostream>
+#include <string>
+#include <cstring>
+#include <vector>
+#include <map>
+#include <set>
+#include <algorithm>
+#include <math.h>
+#include <cstdio>
+#include <stdio.h>
+#include <queue>
+#include <cstdlib>
+#include <deque>
+#include <cassert>
+#include <stack>
+using namespace std;
+ 
+#define max3(a, b, c) max(a, max(b, c))
+#define min3(a, b, c) min(a, min(b, c))
+#define mp make_pair
+#define f first
+#define se second
+#define pb push_back
+#define ppb pop_back
+#define ll long long
+#define ull unsigned long long
+#define cntbit(x) __builtin_popcount(x)
+#define endl '\n'
+#define uset unordered_set
+#define umap unordered_map
+#define pii pair<int, int>
+#define ld long double
+#define pll pair<long long, long long>
+
+const int inf = 2e9; 
+const int N = 3e5 + 1;
+int n, a[N], d[N], sz[N], dist2[N], g2[N], val_ans[N], q[N], ql, qr, p[N], now[N], s;
+pair <pii, pii> maxx[N];
+vector <int> g[N];
+bool used[N];
+ll k;
+
+int centroid(int v, int n, int p = -1) {
+	for(int to : g[v])
+		if(to != p && !used[to] && sz[to] > n / 2)
+			return centroid(to, n, v);
+	return v;
+}
+
+void dfs_sz(int v) {
+	sz[v] = 1;
+	now[s++] = v;
+	for(int to : g[v])
+		if(to != p[v] && !used[to]) {
+			p[to] = v;
+			d[to] = d[v] + 1;
+			dfs_sz(to);
+			sz[v] += sz[to];
+		}
+}
+
+void precalc(int center) {
+	p[center] = -1;
+	d[center] = s = 0;
+	dfs_sz(center);
+	used[center] = true;
+	for(int i = 0; i < s; ++i) {
+		int v = now[i];
+		pii nw = mp(a[v] - d[v], -v);
+		if(maxx[center].f < nw)
+			maxx[center] = mp(nw, maxx[center].f);
+		else if(maxx[center].se < nw)
+			maxx[center].se = nw;
+	}
+	for(int i = 0; i < s; ++i) {
+		int v = now[i];
+
+		int to = -maxx[center].f.se, val = maxx[center].f.f - d[v];
+		if(to == v)
+			to = -maxx[center].se.se, val = maxx[center].se.f - d[v];
+		if(to != v && (!g2[v] || mp(val, -to) > mp(val_ans[v], -g2[v])))
+			g2[v] = to, val_ans[v] = val;
+	}
+
+	for(int to : g[center])
+		if(!used[to])
+			precalc(centroid(to, sz[to], center));
+}
+
+
+int main() {
+	d[0] = inf;
+	for(int i = 0; i < N; ++i)
+		maxx[i] = mp(mp(-inf, -inf), mp(-inf, -inf));
+	scanf("%d%lld", &n, &k);
+    for(int i = 1; i <= n; ++i)
+    	scanf("%d", &a[i]);
+    for(int i = 1; i < n; ++i) {
+    	int u, v;
+    	scanf("%d%d", &u, &v);
+    	g[u].pb(v);
+    	g[v].pb(u);
+    }
+    dfs_sz(1);
+    precalc(centroid(1, n, -1));
+    memset(used, 0, sizeof(used));
+	for(int v = 1; ; ) {
+		used[v] = true;
+		if(dist2[v] == k) {
+			printf("%d\n", v);
+			return 0;
+		}
+		int mx = g2[v];
+		if(!used[mx]) {
+			dist2[mx] = dist2[v] + 1;
+			v = mx;
+		}
+		else {
+			k = (k - dist2[mx]) % (dist2[v] - dist2[mx] + 1);
+			for(int d = 0; d < k; ++d, mx = g2[mx])
+				continue;
+			printf("%d\n", mx);
+			return 0;
+		}
+	}
+    return 0;
+}

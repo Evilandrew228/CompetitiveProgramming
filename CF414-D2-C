@@ -1,0 +1,120 @@
+// https://codeforces.com/blog/entry/51962
+
+#include <iostream>
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+using namespace __gnu_pbds;
+#include <stdio.h>
+#include <algorithm>
+#include <math.h>
+#include <random>
+#include <string>
+#include <cstring>
+#include <set>
+#include <map>
+#include <time.h>
+using namespace std;
+
+typedef tree <int, null_type, less <int>, rb_tree_tag, tree_order_statistics_node_update> ordered_set;
+
+#define max3(a, b, c) max(a, max(b, c))
+#define min3(a, b, c) min(a, min(b, c))
+#define mp make_pair
+#define f first
+#define se second
+#define pb push_back
+#define ppb pop_back
+#define ll long long
+#define ull unsigned long long
+#define cntbit(x) __builtin_popcount(x)
+#define endl '\n'
+#define uset unordered_set
+#define umap unordered_map
+#define pii pair<int, int>
+#define ld long double
+#define pll pair<long long, long long>
+
+const int inf = 2e9;
+const int N = 3e5 + 15;
+int n, cnt[2][N];
+int ans[N];
+string s[2];
+ordered_set used;
+int mov[N];
+vector <int> is[2];
+
+int main() {
+	ios_base::sync_with_stdio(0); cout.tie(0); cin.tie(0);
+	cin >> s[0] >> s[1];
+	for(int d = 0; d < 2; ++d)
+		for(char i : s[d])
+			++cnt[d][i - 'a'];
+	n = s[0].size();
+	for(int i = 1; i <= n; ++i)
+		used.insert(i);
+	for(int step = 1; step <= n; ++step) {
+		bool flag = false;
+		if(step & 1) {
+			int a = inf, summ = 0;
+			for(int i = 0; i < 26; ++i)
+				if(cnt[0][i]) {
+					--cnt[0][i];
+					a = i;
+					break;
+				}
+			for(int i = 0; i <= a; ++i)
+				summ += cnt[1][i];
+			for(int i = 25; i > a; --i)
+				flag |= (cnt[1][i] != 0);
+			if(!flag) {
+				int i = *used.find_by_order(summ);
+				if(used.find_by_order(summ) == used.end())
+					i = *used.rbegin();
+				mov[i] = 1;
+				used.erase(i);
+			}
+			else {
+				int i = *used.begin();
+				mov[i] = 1;
+				used.erase(i);
+			}
+			is[0].pb(a);
+		}
+		else {
+			int a = inf, summ = 0;
+			for(int i = 25; i >= 0; --i)
+				if(cnt[1][i]) {
+					--cnt[1][i];
+					a = i;
+					break;
+				}
+
+			for(int i = 25; i >= a; --i)
+				summ += cnt[0][i];
+			for(int i = 0; i < a; ++i)
+				flag |= (cnt[0][i] != 0);
+			if(!flag) {
+				int i = *used.find_by_order(summ);
+				if(used.find_by_order(summ) == used.end())
+					i = *used.rbegin();
+				mov[i] = 0;
+				used.erase(i);
+			}
+			else {
+				int i = *used.begin();
+				mov[i] = 0;
+				used.erase(i);
+			}
+			is[1].pb(a);
+		}
+	}
+	sort(is[0].begin(), is[0].end());
+	reverse(is[0].begin(), is[0].end());
+	sort(is[1].begin(), is[1].end());
+	for(int i = 1; i <= n; ++i) {
+		cout << char('a' + is[mov[i] ^ 1].back());
+		is[mov[i] ^ 1].pop_back();
+	}
+	cout << endl;
+	return 0;
+}

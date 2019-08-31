@@ -1,0 +1,64 @@
+// http://ceoi2013.hsin.hr/tasks/tasks_and_solutions.pdf
+
+#include <iostream>
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <stdio.h>
+#include "treasure.h"
+#include <assert.h>
+#include <string.h>
+using namespace __gnu_pbds;
+#include <stdio.h>
+#include <algorithm>
+#include <math.h>
+#include <random>
+#include <string>
+#include <cstring>
+#include <set>
+#include <map>
+#include <time.h>
+using namespace std;
+
+typedef tree <int, null_type, less <int>, rb_tree_tag, tree_order_statistics_node_update> ordered_set;
+
+#define max3(a, b, c) max(a, max(b, c))
+#define min3(a, b, c) min(a, min(b, c))
+#define mp make_pair
+#define f first
+#define se second
+#define pb push_back
+#define ppb pop_back
+#define ll long long
+#define ull unsigned long long
+#define cntbit(x) __builtin_popcount(x)
+#define endl '\n'
+#define uset unordered_set
+#define umap unordered_map
+#define pii pair<int, int>
+#define ld long double
+#define pll pair<long long, long long>
+
+int dp[105][105], m, n;
+
+inline pii part(int i, int j) {
+	return mp(i > n, j > n);
+}
+
+void findTreasure(int N) {
+	m = N, n = (N >> 1);
+    for(int i = m; i; --i)
+    	for(int j = m; j; --j) {
+    		if(part(i, j) == mp(1, 1))
+    			dp[i][j] = countTreasure(1, 1, i, j);
+    		else if(part(i, j) == mp(1, 0))
+    			dp[i][j] = dp[i][m] - (j < m ? countTreasure(1, j + 1, i, m) : 0);
+    		else if(part(i, j) == mp(0, 1))
+    			dp[i][j] = dp[m][j] - (i < m ? countTreasure(i + 1, 1, m, j) : 0);
+    		else
+    			dp[i][j] = -(dp[m][m] - dp[i][m] - dp[m][j] - (i < m && j < m ? countTreasure(i + 1, j + 1, m, m) : 0));
+    	}
+    for(int i = 1; i <= N; ++i)
+    	for(int j = 1; j <= N; ++j)
+    		if(dp[i][j] - dp[i-1][j] - dp[i][j-1] + dp[i-1][j-1])
+	    		Report(i, j);
+}

@@ -1,0 +1,97 @@
+// https://github.com/yazanKabbany/CompetitiveProgramming/blob/master/UVA/UVA%201406.cpp
+
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <iostream>
+#include <stdio.h>
+#include <assert.h>
+#include <string.h>
+#include <stdio.h>
+#include <algorithm>
+#include <math.h>
+#include <random>
+#include <string>
+#include <cstring>
+#include <set>
+#include <map>
+#include <time.h>
+using namespace __gnu_pbds;
+using namespace std;
+
+typedef tree <int, null_type, less <int>, rb_tree_tag, tree_order_statistics_node_update> ordered_set;
+
+#define max3(a, b, c) max(a, max(b, c))
+#define min3(a, b, c) min(a, min(b, c))
+#define mp make_pair
+#define f first
+#define se second
+#define pb push_back
+#define ppb pop_back
+#define ll long long
+#define ull unsigned long long
+#define cntbit(x) __builtin_popcount(x)
+#define endl '\n'
+#define uset unordered_set
+#define umap unordered_map
+#define pii pair<int, int>
+#define ld long double
+#define pll pair<long long, long long>
+
+const int B = 20;
+const int N = (1 << 16);
+int n, q, m, t[B][N], st[B], add;
+ll ans;
+
+inline void inc(int j, int i, int val) {
+	for(; i < N; i = (i | (i + 1)))
+		t[j][i] += val;
+}
+
+inline int get(int bit, int i) {
+	int res = 0;
+	for(; i >= 0; i = (i & (i + 1)) - 1)
+		res += t[bit][i];
+	return res;
+}
+
+inline int get(int bit, int l, int r) {
+	return get(bit, r) - get(bit, l - 1);
+}
+
+int main() {
+	ios_base::sync_with_stdio(0); cout.tie(0); cin.tie(0);
+	st[0] = 1;
+	for(int i = 1; i < B; ++i)
+		st[i] = st[i - 1] << 1;
+	for(int iter = 1; ; ++iter) {
+		cin >> n;
+		if(n == -1)
+			break;
+		memset(t, 0, sizeof(t));
+		ans = add = 0;
+		for(int i = 1; i <= n; ++i) {
+			cin >> m;
+			for(int j = 0; j < 16; ++j)
+				inc(j, m % st[j + 1], 1);
+		}
+		while(1) {
+			char c;
+			int x;
+			cin >> c;
+			if(c == 'E')
+				break;
+			cin >> x;
+			if(c == 'C')
+				add = (add + x) % st[16];
+			else {
+				int tmp = add % st[x];
+				if(add & st[x])
+					ans += get(x, st[x] - tmp - 1) + get(x, st[x + 1] - tmp, st[x + 1] - 1);
+				else
+					ans += get(x, st[x] - tmp, st[x + 1] - tmp - 1);
+			}
+		}
+		cout << "Case " << iter << ": " << ans << endl;
+	}
+    return 0;
+}
